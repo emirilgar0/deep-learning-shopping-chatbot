@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shopping Assistant</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 0 16px;
+      }
+      textarea {
+        width: 100%;
+        min-height: 120px;
+        padding: 12px;
+        font-size: 14px;
+      }
+      button {
+        padding: 10px 14px;
+        margin-top: 10px;
+        cursor: pointer;
+      }
+      pre {
+        background: #f6f6f6;
+        padding: 12px;
+        overflow: auto;
+      }
+      .row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .status {
+        margin-left: 10px;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Metinden Alan Çıkarma (Gemini)</h2>
+
+    <textarea
+      id="userText"
+      placeholder="Örnek: Müşteri 34 yaşında, hafta sonu akşam saatlerinde alışveriş yapıyor, giyim kategorisini tercih ediyor. Tahmini harcama nedir?"
+    ></textarea>
+
+    <div class="row">
+      <button id="sendBtn">Gönder</button>
+      <span class="status" id="status"></span>
+    </div>
+
+    <h3>Gemini JSON Çıktısı</h3>
+    <pre id="jsonOut">{}</pre>
+
+    <script>
+      const btn = document.getElementById("sendBtn");
+      const statusEl = document.getElementById("status");
+      const out = document.getElementById("jsonOut");
+
+      btn.addEventListener("click", async () => {
+        const text = document.getElementById("userText").value.trim();
+        if (!text) return;
+
+        statusEl.textContent = "Gönderiliyor...";
+        out.textContent = "{}";
+
+        try {
+          const res = await fetch("http://localhost:3000/extract", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text }),
+          });
+
+          const data = await res.json();
+          if (!res.ok) throw new Error(data?.error || "API error");
+
+          out.textContent = JSON.stringify(data, null, 2);
+          statusEl.textContent = "Tamam ✅";
+        } catch (e) {
+          statusEl.textContent = "Hata ❌";
+          out.textContent = JSON.stringify({ error: String(e) }, null, 2);
+        }
+      });
+    </script>
+  </body>
+</html>
